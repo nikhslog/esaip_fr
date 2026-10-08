@@ -1,0 +1,91 @@
+/* ESAIP — MSc page */
+
+:root {
+  --blue-900: #1c3580;
+  --blue-800: #2a49a3;
+  --blue-600: #3a6fb6;
+  --blue-500: #4b83cb;
+  --blue-100: #e3e8f7;
+  --blue-50:  #f5f7fc;
+  --ink: #18234a;
+  --muted: #6b7596;
+  --line: #e2e7f3;
+  --shadow: 0 10px 30px -18px rgba(28, 53, 128, .35);
+  --font-head: "Sora", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, -apple-system, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--font-body);
+  color: var(--ink);
+  background:
+    radial-gradient(700px 320px at 50% -120px, rgba(75, 131, 203, .16), transparent 70%),
+    var(--blue-50);
+  -webkit-font-smoothing: antialiased;
+}
+
+.page {
+  max-width: 440px;
+  margin: 0 auto;
+  padding: calc(56px + env(safe-area-inset-top)) 20px calc(40px + env(safe-area-inset-bottom));
+}
+
+/* Header */
+.head { text-align: center; margin-bottom: 36px; }
+.logo { width: 150px; height: auto; display: block; margin: 0 auto; }
+.intro { margin: 18px 0 0; font-size: 13px; letter-spacing: .02em; color: var(--muted); }
+
+/* Program */
+.program {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 24px 20px 20px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow);
+}
+.program h2 {
+  margin: 0 0 18px;
+  font-family: var(--font-head);
+  font-weight: 600;
+  font-size: 19px;
+  line-height: 1.3;
+  color: var(--blue-800);
+}
+.links { display: grid; gap: 8px; }
+
+/* Buttons */
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 12px 18px;
+  border: 0;
+  border-radius: 12px;
+  font: 500 15px/1.2 var(--font-body);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background .2s ease, opacity .2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn--primary { background: var(--blue-800); color: #fff; }
+.btn--primary:hover { background: var(--blue-900); }
+.btn--ghost { background: var(--blue-100); color: var(--blue-800); }
+.btn--ghost:hover { background: #d6ddf2; }
+.btn:focus-visible { outline: 2px solid var(--blue-500); outline-offset: 2px; }
+
+/* Footer */
+.foot {
+  margin-top: 32px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+}
+.foot a { color: var(--blue-600); text-decoration: none; }
+.foot a:hover { text-decoration: underline; }
+.foot span { margin: 0 6px; }

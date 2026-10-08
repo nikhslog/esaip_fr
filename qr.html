@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ESAIP — QR code for the event</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body { background: var(--blue-50); }
+    .qr-page { max-width: 560px; margin: 0 auto; padding: 32px 20px 48px; }
+    .qr-page h1 { font-size: 26px; color: var(--blue-800); margin: 24px 0 8px; }
+    .qr-page > p { color: var(--muted); margin: 0 0 20px; }
+    .qr-form { display: grid; gap: 10px; margin-bottom: 24px; }
+    .qr-form input {
+      font: 500 15px var(--font-body); padding: 14px 16px; border-radius: 12px;
+      border: 1px solid var(--line); background: #fff; color: var(--ink); width: 100%;
+    }
+    .poster {
+      background: #fff; border-radius: 22px; box-shadow: var(--shadow);
+      padding: 28px 24px 24px; text-align: center;
+    }
+    .poster__logo { width: 150px; margin: 0 auto 16px; }
+    .poster__title { font-family: var(--font-head); font-weight: 600; font-size: 22px; color: var(--blue-800); margin: 0 0 4px; }
+    .poster__sub { margin: 0 0 18px; color: var(--muted); font-size: 15px; }
+    .qr-wrap { position: relative; display: inline-block; padding: 14px; border-radius: 16px; border: 2px solid var(--blue-100); }
+    #qr canvas, #qr img { width: 280px !important; height: 280px !important; display: block; }
+    .qr-center {
+      position: absolute; inset: 0; margin: auto; width: 62px; height: 62px;
+      border-radius: 12px; border: 5px solid #fff; background: #fff;
+    }
+    .qr-center img { width: 100%; height: 100%; border-radius: 8px; }
+    .poster__url { margin: 14px 0 0; font-size: 13px; color: var(--blue-600); word-break: break-all; }
+    .qr-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+    @media print {
+      body { background: #fff; }
+      .no-print { display: none !important; }
+      .poster { box-shadow: none; }
+      .qr-page { padding-top: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="qr-page">
+    <div class="no-print">
+      <a href="index.html" style="font-weight:600;color:var(--blue-800);text-decoration:none">← Back to the page</a>
+      <h1>QR code for your stand</h1>
+      <p>Paste the public address of the landing page (it's pre-filled with this site's address). Then download the PNG or print the card.</p>
+      <form class="qr-form" id="qrForm">
+        <input id="qrUrl" type="url" required placeholder="https://your-site.example/" aria-label="Landing page URL">
+        <button class="btn btn--primary" type="submit">Generate QR code</button>
+      </form>
+    </div>
+
+    <div class="poster" id="poster">
+      <img class="poster__logo" src="assets/logo-blue.png" alt="ESAIP Engineering School">
+      <p class="poster__title">Scan to explore our MSc programs</p>
+      <p class="poster__sub">Program pages &amp; brochures to download</p>
+      <div class="qr-wrap">
+        <div id="qr"></div>
+        <div class="qr-center"><img src="assets/favicon.png" alt=""></div>
+      </div>
+      <p class="poster__url" id="qrLabel"></p>
+    </div>
+
+    <div class="qr-actions no-print">
+      <button class="btn btn--ghost" type="button" id="dlBtn">Download PNG</button>
+      <button class="btn btn--ghost" type="button" onclick="window.print()">Print</button>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script>
+  (function () {
+    "use strict";
+    var input = document.getElementById("qrUrl");
+    var box = document.getElementById("qr");
+    var label = document.getElementById("qrLabel");
+    var size = 1024; // high resolution for printing
+
+    // Default: the landing page next to this file
+    input.value = location.href.replace(/qr\.html.*$/, "");
+
+    function render() {
+      var url = input.value.trim();
+      if (!url) return;
+      box.innerHTML = "";
+      new QRCode(box, {
+        text: url, width: size, height: size,
+        colorDark: "#1c3580", colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H   // H lets the centre logo sit on top safely
+      });
+      label.textContent = url.replace(/^https?:\/\//, "");
+    }
+
+    document.getElementById("qrForm").addEventListener("submit", function (e) {
+      e.preventDefault(); render();
+    });
+
+    // Download PNG with the centre mark baked in
+    document.getElementById("dlBtn").addEventListener("click", function () {
+      var src = box.querySelector("canvas");
+      if (!src) return;
+      var pad = 64, out = document.createElement("canvas");
+      out.width = out.height = size + pad * 2;
+      var ctx = out.getContext("2d");
+      ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, out.width, out.height);
+      ctx.drawImage(src, pad, pad, size, size);
+      var mark = new Image();
+      mark.onload = function () {
+        var m = size * 0.2, x = (out.width - m) / 2, b = m * 0.08;
+        ctx.fillStyle = "#fff"; ctx.fillRect(x - b, x - b, m + b * 2, m + b * 2);
+        ctx.drawImage(mark, x, x, m, m);
+        var a = document.createElement("a");
+        a.download = "esaip-msc-qr.png";
+        a.href = out.toDataURL("image/png");
+        a.click();
+      };
+      mark.src = "assets/favicon.png";
+    });
+
+    render();
+  })();
+  </script>
+</body>
+</html>
