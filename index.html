@@ -23,7 +23,8 @@
       <h2>Environmental Transition &amp; Energy Management</h2>
       <div class="links">
         <a class="btn btn--primary" href="https://en.esaip.org/formation/msc-environmental-transition-energy-management/" target="_blank" rel="noopener">View program</a>
-        <a class="btn btn--ghost" href="brochures/ESAIP-MSc-Environmental-Transition-Energy-Management.pdf" download>Download brochure</a>
+        <a class="btn btn--ghost" href="brochures/ESAIP-MSc-Environmental-Transition-Energy-Management.pdf"
+           data-brochure="Environmental Transition & Energy Management">Download brochure</a>
       </div>
     </article>
 
@@ -31,19 +32,33 @@
       <h2>Cybersecurity &amp; Data Science</h2>
       <div class="links">
         <a class="btn btn--primary" href="https://en.esaip.org/formation/msc-cybersecurity/" target="_blank" rel="noopener">View program</a>
-        <a class="btn btn--ghost" href="brochures/ESAIP-MSc-Cybersecurity-Data-Science.pdf" download>Download brochure</a>
+        <a class="btn btn--ghost" href="brochures/ESAIP-MSc-Cybersecurity-Data-Science.pdf"
+           data-brochure="Cybersecurity & Data Science">Download brochure</a>
       </div>
     </article>
 
-    <section class="program form-card" aria-labelledby="form-title">
-      <h2 id="form-title">Stay in touch</h2>
-      <p class="form-note">Leave your details and our team will contact you.</p>
+    <footer class="foot">
+      <a href="mailto:international.india@esaip.org">international.india@esaip.org</a>
+      <span aria-hidden="true">·</span>
+      <a href="https://en.esaip.org/" target="_blank" rel="noopener">esaip.org</a>
+    </footer>
+
+  </main>
+
+  <!-- Pop-up form shown before a brochure download -->
+  <dialog class="modal" id="leadDialog" aria-labelledby="formTitle">
+    <button class="modal__close" type="button" id="closeDialog" aria-label="Close">&times;</button>
+
+    <div id="formView">
+      <h2 id="formTitle">Get the brochure</h2>
+      <p class="form-note" id="formProgram">Enter your details to download the brochure.</p>
 
       <form id="leadForm" novalidate>
         <!-- FormSubmit settings -->
-        <input type="hidden" name="_subject" value="New MSc enquiry — ESAIP event">
+        <input type="hidden" name="_subject" id="formSubject" value="New brochure request — ESAIP event">
         <input type="hidden" name="_template" value="table">
         <input type="hidden" name="_captcha" value="false">
+        <input type="hidden" name="brochure" id="formBrochure" value="">
         <input type="text" name="_honey" class="hp" tabindex="-1" autocomplete="off">
 
         <div class="row">
@@ -65,25 +80,86 @@
           <input type="tel" name="phone" autocomplete="tel" inputmode="tel" placeholder="+91 98765 43210" required>
         </label>
 
-        <button class="btn btn--primary" type="submit">Send</button>
+        <button class="btn btn--primary" type="submit">Download brochure</button>
         <p class="form-status" id="formStatus" role="status" aria-live="polite"></p>
-        <p class="consent">By sending, you agree that ESAIP may contact you about its programs.</p>
+        <p class="consent">By submitting, you agree that ESAIP may contact you about its programs.</p>
       </form>
-    </section>
+    </div>
 
-    <footer class="foot">
-      <a href="mailto:international.india@esaip.org">international.india@esaip.org</a>
-      <span aria-hidden="true">·</span>
-      <a href="https://en.esaip.org/" target="_blank" rel="noopener">esaip.org</a>
-    </footer>
-
-  </main>
+    <div class="done" id="doneView" hidden>
+      <div class="done-icon" aria-hidden="true">✓</div>
+      <h2>Thank you!</h2>
+      <p class="form-note">Your brochure is downloading. Our team will be in touch soon.</p>
+      <a class="btn btn--primary" id="doneLink" href="#" download>Download again</a>
+    </div>
+  </dialog>
 
   <script>
     (function () {
-      var form = document.getElementById("leadForm");
-      var status = document.getElementById("formStatus");
-      var button = form.querySelector("button");
+      var EMAIL = "international.india@esaip.org";
+      var STORAGE_KEY = "esaip_msc_lead";
+
+      var dialog   = document.getElementById("leadDialog");
+      var form     = document.getElementById("leadForm");
+      var status   = document.getElementById("formStatus");
+      var submit   = form.querySelector("button[type=submit]");
+      var formView = document.getElementById("formView");
+      var doneView = document.getElementById("doneView");
+      var doneLink = document.getElementById("doneLink");
+      var pending  = null; // { href, name }
+
+      function hasRegistered() {
+        try { return localStorage.getItem(STORAGE_KEY) === "1"; } catch (e) { return false; }
+      }
+      function rememberRegistered() {
+        try { localStorage.setItem(STORAGE_KEY, "1"); } catch (e) {}
+      }
+
+      function startDownload(href) {
+        var a = document.createElement("a");
+        a.href = href;
+        a.setAttribute("download", "");
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      }
+
+      function openForm(item) {
+        pending = item;
+        document.getElementById("formProgram").textContent =
+          "Enter your details to download the " + item.name + " brochure.";
+        document.getElementById("formBrochure").value = item.name;
+        document.getElementById("formSubject").value = "New brochure request — " + item.name;
+        formView.hidden = false;
+        doneView.hidden = true;
+        status.textContent = "";
+        status.className = "form-status";
+        dialog.showModal();
+      }
+
+      function showDone() {
+        rememberRegistered();
+        form.reset();
+        form.classList.remove("tried");
+        formView.hidden = true;
+        doneView.hidden = false;
+        doneLink.href = pending.href;
+        startDownload(pending.href);
+      }
+
+      // Download buttons: ask for details the first time, download directly afterwards
+      document.querySelectorAll("[data-brochure]").forEach(function (link) {
+        link.addEventListener("click", function (e) {
+          e.preventDefault();
+          var item = { href: link.getAttribute("href"), name: link.getAttribute("data-brochure") };
+          if (hasRegistered()) startDownload(item.href);
+          else openForm(item);
+        });
+      });
+
+      // Close: × button or tap outside the box
+      document.getElementById("closeDialog").addEventListener("click", function () { dialog.close(); });
+      dialog.addEventListener("click", function (e) { if (e.target === dialog) dialog.close(); });
 
       form.addEventListener("submit", function (e) {
         e.preventDefault();
@@ -94,31 +170,30 @@
           return;
         }
 
-        button.disabled = true;
-        button.textContent = "Sending…";
+        submit.disabled = true;
+        submit.textContent = "Sending…";
         status.className = "form-status";
         status.textContent = "";
 
-        fetch("https://formsubmit.co/ajax/international.india@esaip.org", {
+        fetch("https://formsubmit.co/ajax/" + EMAIL, {
           method: "POST",
           headers: { "Content-Type": "application/json", "Accept": "application/json" },
           body: JSON.stringify(Object.fromEntries(new FormData(form)))
         })
-          .then(function (res) { return res.json(); })
-          .then(function (data) {
-            if (String(data.success) !== "true") throw new Error(data.message);
-            form.reset();
-            form.classList.remove("tried");
-            status.className = "form-status is-ok";
-            status.textContent = "Thank you! We'll be in touch soon.";
-          })
+          .then(function () { showDone(); })
           .catch(function () {
-            status.className = "form-status is-error";
-            status.textContent = "Couldn't send. Please check your connection and try again.";
+            // FormSubmit often delivers the email even when the browser can't read its reply,
+            // so only treat it as a failure when the phone is actually offline.
+            if (navigator.onLine === false) {
+              status.className = "form-status is-error";
+              status.textContent = "You seem to be offline. Please check your connection and try again.";
+            } else {
+              showDone();
+            }
           })
           .finally(function () {
-            button.disabled = false;
-            button.textContent = "Send";
+            submit.disabled = false;
+            submit.textContent = "Download brochure";
           });
       });
     })();
