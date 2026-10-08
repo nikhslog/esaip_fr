@@ -35,12 +35,92 @@
       </div>
     </article>
 
+        <section class="program form-card" aria-labelledby="form-title">
+      <h2 id="form-title">Stay in touch</h2>
+      <p class="form-note">Leave your details and our team will contact you.</p>
+
+      <form id="leadForm" novalidate>
+        <!-- Web3Forms settings -->
+        <input type="hidden" name="access_key" value="YOUR_ACCESS_KEY_HERE">
+        <input type="hidden" name="subject" value="New MSc enquiry — ESAIP event">
+        <input type="hidden" name="from_name" value="ESAIP MSc event page">
+        <input type="checkbox" name="botcheck" class="hp" tabindex="-1" autocomplete="off">
+
+        <div class="row">
+          <label class="field">
+            <span>Name</span>
+            <input type="text" name="name" autocomplete="given-name" required>
+          </label>
+          <label class="field">
+            <span>Surname</span>
+            <input type="text" name="surname" autocomplete="family-name" required>
+          </label>
+        </div>
+        <label class="field">
+          <span>Email</span>
+          <input type="email" name="email" autocomplete="email" inputmode="email" required>
+        </label>
+        <label class="field">
+          <span>Phone number</span>
+          <input type="tel" name="phone" autocomplete="tel" inputmode="tel" placeholder="+91 98765 43210" required>
+        </label>
+
+        <button class="btn btn--primary" type="submit">Send</button>
+        <p class="form-status" id="formStatus" role="status" aria-live="polite"></p>
+        <p class="consent">By sending, you agree that ESAIP may contact you about its programs.</p>
+      </form>
+    </section>
+
     <footer class="foot">
-      <a href="mailto:admissions@esaip.org">admissions@esaip.org</a>
+      <a href="mailto:nikhslog@gmail.com">nikhslog@gmail.com</a>
       <span aria-hidden="true">·</span>
       <a href="https://en.esaip.org/" target="_blank" rel="noopener">esaip.org</a>
     </footer>
 
   </main>
+    <script>
+    (function () {
+      var form = document.getElementById("leadForm");
+      var status = document.getElementById("formStatus");
+      var button = form.querySelector("button");
+
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        if (!form.checkValidity()) {
+          form.classList.add("tried");
+          status.className = "form-status is-error";
+          status.textContent = "Please fill in all fields with a valid email.";
+          return;
+        }
+
+        button.disabled = true;
+        button.textContent = "Sending…";
+        status.className = "form-status";
+        status.textContent = "";
+
+        fetch("https://api.web3forms.com/submit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Accept": "application/json" },
+          body: JSON.stringify(Object.fromEntries(new FormData(form)))
+        })
+          .then(function (res) { return res.json(); })
+          .then(function (data) {
+            if (!data.success) throw new Error(data.message);
+            form.reset();
+            form.classList.remove("tried");
+            status.className = "form-status is-ok";
+            status.textContent = "Thank you! We'll be in touch soon.";
+          })
+          .catch(function () {
+            status.className = "form-status is-error";
+            status.textContent = "Couldn't send. Please check your connection and try again.";
+          })
+          .finally(function () {
+            button.disabled = false;
+            button.textContent = "Send";
+          });
+      });
+    })();
+  </script>
 </body>
 </html>
